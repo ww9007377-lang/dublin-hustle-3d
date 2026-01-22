@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dublin Hustle 3D</title>
+    <style>
+        body { margin:0; overflow:hidden; }
+    </style>
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Ground
+const groundGeo = new THREE.PlaneGeometry(200, 200);
+const groundMat = new THREE.MeshBasicMaterial({ color: 0x555555 });
+const ground = new THREE.Mesh(groundGeo, groundMat);
+ground.rotation.x = -Math.PI / 2;
+scene.add(ground);
+
+// Player
+const playerGeo = new THREE.BoxGeometry(2,2,2);
+const playerMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+const player = new THREE.Mesh(playerGeo, playerMat);
+player.position.y = 1;
+scene.add(player);
+
+// Building
+const buildingGeo = new THREE.BoxGeometry(10,10,10);
+const buildingMat = new THREE.MeshBasicMaterial({ color: 0x888888 });
+const building = new THREE.Mesh(buildingGeo, buildingMat);
+building.position.set(10,5,-20);
+scene.add(building);
+
+camera.position.set(0, 10, 20);
+camera.lookAt(player.position);
+
+let keys = {};
+document.addEventListener("keydown", e => keys[e.key] = true);
+document.addEventListener("keyup", e => keys[e.key] = false);
+
+function movePlayer(){
+    if(keys["w"]) player.position.z -= 0.2;
+    if(keys["s"]) player.position.z += 0.2;
+    if(keys["a"]) player.position.x -= 0.2;
+    if(keys["d"]) player.position.x += 0.2;
+}
+
+function animate(){
+    requestAnimationFrame(animate);
+    movePlayer();
+    camera.lookAt(player.position);
+    renderer.render(scene, camera);
+}
+
+animate();
+</script>
+
+</body>
+</html>
