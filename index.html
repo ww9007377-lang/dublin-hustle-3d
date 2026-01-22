@@ -3,7 +3,7 @@
 <head>
     <title>Dublin Hustle 3D</title>
     <style>
-        body { margin:0; overflow:hidden; }
+        body { margin:0; overflow:hidden; font-family:Arial; }
 
         #loading{
             position:absolute;
@@ -11,6 +11,18 @@
             height:100%;
             background: url('loading.png') no-repeat center center;
             background-size: cover;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        #startBtn{
+            padding:15px 30px;
+            font-size:20px;
+            border:none;
+            background:black;
+            color:white;
+            border-radius:10px;
         }
 
         canvas { display:none; }
@@ -18,11 +30,14 @@
 </head>
 <body>
 
-<div id="loading"></div>
+<div id="loading">
+    <button id="startBtn">START GAME</button>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
 <script>
+const startBtn = document.getElementById("startBtn");
 const loading = document.getElementById("loading");
 
 const scene = new THREE.Scene();
@@ -78,17 +93,17 @@ function updateCamera(){
     camera.lookAt(player.position);
 }
 
-setTimeout(() => {
-    loading.style.display = "none";
-    renderer.domElement.style.display = "block";
-    animate();
-}, 2000);
-
 function animate(){
     requestAnimationFrame(animate);
     updateCamera();
     renderer.render(scene, camera);
 }
+
+startBtn.addEventListener("click", () => {
+    loading.style.display = "none";
+    renderer.domElement.style.display = "block";
+    animate();
+});
 </script>
 
 </body>
