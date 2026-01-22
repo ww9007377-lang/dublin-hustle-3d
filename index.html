@@ -3,14 +3,29 @@
 <head>
     <title>Dublin Hustle 3D</title>
     <style>
-        body { margin:0; overflow:hidden; touch-action:none; }
+        body { margin:0; overflow:hidden; }
+
+        #loading{
+            position:absolute;
+            width:100%;
+            height:100%;
+            background: url('loading.png') no-repeat center center;
+            background-size: cover;
+        }
+
+        canvas { display:none; }
     </style>
 </head>
 <body>
 
+<div id="loading"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
 <script>
+const loading = document.getElementById("loading");
+
+// Scene
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xa0a0a0);
 
@@ -18,6 +33,7 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHei
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+renderer.domElement.style.display = "none";
 
 // Light
 const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -68,13 +84,17 @@ function updateCamera(){
     camera.lookAt(player.position);
 }
 
+setTimeout(() => {
+    loading.style.display = "none";
+    renderer.domElement.style.display = "block";
+    animate();
+}, 2000);
+
 function animate(){
     requestAnimationFrame(animate);
     updateCamera();
     renderer.render(scene, camera);
 }
-
-animate();
 </script>
 
 </body>
