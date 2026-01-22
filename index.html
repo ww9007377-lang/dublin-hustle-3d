@@ -25,7 +25,6 @@
 <script>
 const loading = document.getElementById("loading");
 
-// Scene
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xa0a0a0);
 
@@ -35,26 +34,22 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 renderer.domElement.style.display = "none";
 
-// Light
 const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(10,20,10);
 scene.add(light);
 
-// Road
 const roadGeo = new THREE.PlaneGeometry(400, 40);
 const roadMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
 const road = new THREE.Mesh(roadGeo, roadMat);
 road.rotation.x = -Math.PI/2;
 scene.add(road);
 
-// Player
 const playerGeo = new THREE.BoxGeometry(2,4,2);
 const playerMat = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
 const player = new THREE.Mesh(playerGeo, playerMat);
 player.position.y = 2;
 scene.add(player);
 
-// Touch movement
 let touchX = null;
 let touchY = null;
 
@@ -76,7 +71,6 @@ window.addEventListener("touchmove", e => {
     touchY = e.touches[0].clientY;
 });
 
-// Camera follow
 function updateCamera(){
     camera.position.x = player.position.x;
     camera.position.z = player.position.z + 20;
