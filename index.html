@@ -3,155 +3,166 @@
 <head>
 <meta charset="UTF-8">
 <title>Dublin Hustle 3D</title>
-
 <style>
-body{
-  margin:0;
-  overflow:hidden;
-  font-family:Arial;
-  background:black;
+body { margin:0; overflow:hidden; font-family:arial; background:black;}
+#loading {
+  position:fixed; inset:0; background:black; color:white;
+  display:flex; align-items:center; justify-content:center;
+  font-size:30px; z-index:10;
 }
-
-#loading{
-  position:fixed;
-  width:100%;
-  height:100%;
-  background:url('loading.png') center center no-repeat;
-  background-size:cover;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:10;
+#healthBar {
+  position:fixed; top:20px; left:20px;
+  width:200px; height:20px; border:2px solid white;
 }
-
-#startBtn{
-  padding:20px 40px;
-  font-size:24px;
-  border:none;
-  background:white;
-  border-radius:10px;
+#health {
+  height:100%; width:100%; background:lime;
 }
-
-#controls{
-  position:fixed;
-  bottom:30px;
-  left:50%;
-  transform:translateX(-50%);
-  display:grid;
-  grid-template-columns:70px 70px 70px;
-  gap:10px;
-  z-index:5;
+.controls {
+  position:fixed; bottom:30px; width:100%;
+  display:flex; justify-content:space-around;
 }
-
-#controls button{
-  height:70px;
-  font-size:26px;
-  border-radius:10px;
-  border:none;
+button {
+  width:70px; height:70px; font-size:25px;
+  border-radius:50%; border:none; opacity:0.7;
 }
-
-  
 </style>
 </head>
-
 <body>
 
-<div id="loading">
-  <button id="startBtn">START GAME</button>
+<div id="loading">Loading Dublin Hustle...</div>
+
+<div id="healthBar"><div id="health"></div></div>
+
+<div class="controls">
+  <button id="left">◀</button>
+  <button id="up">▲</button>
+  <button id="right">▶</button>
 </div>
 
-<div id="controls">
-  <button id="left">⬅️</button>
-  <button id="up">⬆️</button>
-  <button id="right">➡️</button>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
 
 <script>
-const startBtn = document.getElementById("startBtn");
-const loading = document.getElementById("loading");
-
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0x87ceeb, 80, 400);
-
-// SKY + FOG
-scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0x87ceeb, 80, 400);
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.physicallyCorrectLights = true;
-renderer.outputEncoding = THREE.sRGBEncoding;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-
-// SUNLIGHT + SHADOWS
-const sun = new THREE.DirectionalLight(0xffffff, 1.3);
-sun.position.set(150, 300, 150);
-sun.castShadow = true;
-scene.add(sun);
-
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-const loader = new THREE.TextureLoader();
-
-const roadTexture = loader.load("https://threejs.org/examples/textures/terrain/brick_diffuse.jpg");
-roadTexture.wrapS = roadTexture.wrapT = THREE.RepeatWrapping;
-roadTexture.repeat.set(60, 6);
-
-const roadGeo = new THREE.PlaneGeometry(2000, 200);
-const roadMat = new THREE.MeshStandardMaterial({ map: roadTexture });
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-const roadMat = new THREE.MeshStandardMaterial({ map: roadTexture });
-road.receiveShadow = true;
-road.rotation.x = -Math.PI / 2;
-road.receiveShadow = true;
-const playerMat = new THREE.MeshStandardMaterial({color:0x00ff00});
-player.position.y = 2;
-scene.add(player);
-
+let scene, camera, renderer, player, guard, car;
 let move = {left:false,right:false,up:false};
+let health = 100;
 
-document.getElementById("left").ontouchstart=()=>move.left=true;
-document.getElementById("left").ontouchend=()=>move.left=false;
+init();
+animate();
 
-document.getElementById("right").ontouchstart=()=>move.right=true;
-document.getElementById("right").ontouchend=()=>move.right=false;
+function init(){
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x87ceeb);
 
-document.getElementById("up").ontouchstart=()=>move.up=true;
-document.getElementById("up").ontouchend=()=>move.up=false;
+  camera = new THREE.PerspectiveCamera(75,innerWidth/innerHeight,0.1,5000);
+  camera.position.set(0,10,20);
 
-function updatePlayer(){
-  if(move.left) player.position.x -= 0.2;
-  if(move.right) player.position.x += 0.2;
-  if(move.up) player.position.z -= 0.2;
+  renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  document.body.appendChild(renderer.domElement);
+
+  // Sun
+  const sun = new THREE.DirectionalLight(0xffffff,1.2);
+  sun.position.set(100,200,100);
+  sun.castShadow = true;
+  scene.add(sun);
+
+  // Road
+  const tex = new THREE.TextureLoader().load(
+    "https://threejs.org/examples/textures/terrain/grasslight-big.jpg"
+  );
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(40,4);
+
+  const road = new THREE.Mesh(
+    new THREE.PlaneGeometry(2000,200),
+    new THREE.MeshStandardMaterial({map:tex})
+  );
+  road.rotation.x = -Math.PI/2;
+  road.receiveShadow = true;
+  scene.add(road);
+
+  // Player
+  player = new THREE.Mesh(
+    new THREE.BoxGeometry(5,8,5),
+    new THREE.MeshStandardMaterial({color:0x00ff00})
+  );
+  player.position.y = 4;
+  player.castShadow = true;
+  scene.add(player);
+
+  // Guard AI
+  guard = new THREE.Mesh(
+    new THREE.BoxGeometry(5,8,5),
+    new THREE.MeshStandardMaterial({color:0xff0000})
+  );
+  guard.position.set(40,4,0);
+  scene.add(guard);
+
+  // Car
+  car = new THREE.Mesh(
+    new THREE.BoxGeometry(12,4,6),
+    new THREE.MeshStandardMaterial({color:0x3333ff})
+  );
+  car.position.set(-200,3,0);
+  scene.add(car);
+
+  // Buildings
+  for(let i=0;i<40;i++){
+    const b = new THREE.Mesh(
+      new THREE.BoxGeometry(20,Math.random()*60+20,20),
+      new THREE.MeshStandardMaterial({color:0x888888})
+    );
+    b.position.set(
+      Math.random()*800-400,
+      b.geometry.parameters.height/2,
+      Math.random()*400-200
+    );
+    scene.add(b);
+  }
+
+  // Controls
+  left.ontouchstart=()=>move.left=true;
+  left.ontouchend=()=>move.left=false;
+  right.ontouchstart=()=>move.right=true;
+  right.ontouchend=()=>move.right=false;
+  up.ontouchstart=()=>move.up=true;
+  up.ontouchend=()=>move.up=false;
+
+  setTimeout(()=>loading.style.display="none",1500);
 }
 
-function updateCamera(){
+function update(){
+  if(move.left) player.position.x -= 1;
+  if(move.right) player.position.x += 1;
+  if(move.up) player.position.z -= 1;
+
   camera.position.x = player.position.x;
   camera.position.z = player.position.z + 20;
-  camera.position.y = player.position.y + 15;
   camera.lookAt(player.position);
+
+  // Guard AI follow
+  guard.position.x += (player.position.x - guard.position.x)*0.01;
+  guard.position.z += (player.position.z - guard.position.z)*0.01;
+
+  // Car movement
+  car.position.x += 1;
+  if(car.position.x > 300) car.position.x = -300;
+
+  // Damage if guard close
+  const dist = player.position.distanceTo(guard.position);
+  if(dist < 10){
+    health -= 0.3;
+    document.getElementById("health").style.width = health + "%";
+  }
 }
 
 function animate(){
   requestAnimationFrame(animate);
-  updatePlayer();
-  updateCamera();
+  update();
   renderer.render(scene,camera);
 }
-
-startBtn.onclick = ()=>{
-  loading.style.display="none";
-  renderer.domElement.style.display="block";
-  animate();
-};
 </script>
-
 </body>
 </html>
