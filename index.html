@@ -73,8 +73,8 @@ const startBtn = document.getElementById("startBtn");
 const loading = document.getElementById("loading");
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xa0a0a0);
-const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 80, 400);
 
 // SKY + FOG
 scene.background = new THREE.Color(0x87ceeb);
@@ -86,11 +86,10 @@ renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.2;
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-const light = new THREE.DirectionalLight(0xffffff,1);
-light.position.set(10,20,10);
-scene.add(light);
+
 // SUNLIGHT + SHADOWS
 const sun = new THREE.DirectionalLight(0xffffff, 1.3);
 sun.position.set(150, 300, 150);
@@ -101,22 +100,18 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 const loader = new THREE.TextureLoader();
 
-const roadTexture = loader.load("https://threejs.org/examples/textures/terrain/grasslight-big.jpg");
+const roadTexture = loader.load("https://threejs.org/examples/textures/terrain/brick_diffuse.jpg");
 roadTexture.wrapS = roadTexture.wrapT = THREE.RepeatWrapping;
 roadTexture.repeat.set(60, 6);
 
 const roadGeo = new THREE.PlaneGeometry(2000, 200);
 const roadMat = new THREE.MeshStandardMaterial({ map: roadTexture });
-
-const road = new THREE.Mesh(roadGeo, roadMat);
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const roadMat = new THREE.MeshStandardMaterial({ map: roadTexture });
+road.receiveShadow = true;
 road.rotation.x = -Math.PI / 2;
 road.receiveShadow = true;
-
-scene.add(road);
-
-const playerGeo = new THREE.BoxGeometry(2,4,2);
-const playerMat = new THREE.MeshLambertMaterial({color:0x00ff00});
-const player = new THREE.Mesh(playerGeo,playerMat);
+const playerMat = new THREE.MeshStandardMaterial({color:0x00ff00});
 player.position.y = 2;
 scene.add(player);
 
