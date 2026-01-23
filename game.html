@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dublin Hustle 3D</title>
+<style>
+body{margin:0;overflow:hidden;font-family:Arial;background:black}
+
+#controls{
+position:fixed;
+bottom:30px;
+left:50%;
+transform:translateX(-50%);
+display:grid;
+grid-template-columns:70px 70px 70px;
+gap:10px;
+z-index:20;
+}
+
+#controls button{
+height:70px;
+font-size:26px;
+opacity:0.9;
+}
+
+canvas{position:absolute;top:0;left:0;}
+</style>
+</head>
+<body>
+
+<div id="controls">
+<button id="up">⬆️</button>
+<button id="left">⬅️</button>
+<button id="down">⬇️</button>
+<button id="right">➡️</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xa0a0a0);
+
+const camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
+const renderer=new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth,window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const light=new THREE.DirectionalLight(0xffffff,1);
+light.position.set(10,20,10);
+scene.add(light);
+
+const road=new THREE.Mesh(
+new THREE.PlaneGeometry(600,60),
+new THREE.MeshLambertMaterial({color:0x333333})
+);
+road.rotation.x=-Math.PI/2;
+scene.add(road);
+
+const player=new THREE.Mesh(
+new THREE.BoxGeometry(2,4,2),
+new THREE.MeshLambertMaterial({color:0x00ff00})
+);
+player.position.y=2;
+scene.add(player);
+
+let move={up:false,down:false,left:false,right:false};
+
+function bind(btn,dir){
+document.getElementById(btn).ontouchstart=()=>move[dir]=true;
+document.getElementById(btn).ontouchend=()=>move[dir]=false;
+}
+
+bind("up","up");
+bind("down","down");
+bind("left","left");
+bind("right","right");
+
+function control(){
+let speed=0.3;
+if(move.up) player.position.z-=speed;
+if(move.down) player.position.z+=speed;
+if(move.left) player.position.x-=speed;
+if(move.right) player.position.x+=speed;
+}
+
+function updateCamera(){
+camera.position.set(player.position.x, player.position.y+15, player.position.z+25);
+camera.lookAt(player.position);
+}
+
+function animate(){
+requestAnimationFrame(animate);
+control();
+updateCamera();
+renderer.render(scene,camera);
+}
+animate();
+</script>
+
+</body>
+</html> 
