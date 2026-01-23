@@ -104,7 +104,34 @@ function init(){
  player.position.y = 3;
  player.castShadow = true;
  scene.add(player);
+// BUILDINGS (Dublin street)
 
+function createBuilding(x,z,height,color=0x888888){
+ const b = new THREE.Mesh(
+  new THREE.BoxGeometry(10,height,10),
+  new THREE.MeshStandardMaterial({color})
+ );
+ b.position.set(x, height/2, z);
+ b.castShadow = true;
+ b.receiveShadow = true;
+ scene.add(b);
+}
+
+// Left street
+for(let i=0;i<20;i++){
+ createBuilding(-30, -i*25, 20 + Math.random()*30);
+}
+
+// Right street
+for(let i=0;i<20;i++){
+ createBuilding(30, -i*25, 20 + Math.random()*30);
+}
+
+// Garda Station
+createBuilding(-35, -120, 40, 0x2244aa);
+
+// Court House
+createBuilding(35, -220, 45, 0xaa8844);
  document.getElementById("loading").style.display="none";
 }
 
