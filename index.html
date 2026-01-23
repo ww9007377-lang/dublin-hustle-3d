@@ -9,8 +9,7 @@
             position:absolute;
             width:100%;
             height:100%;
-            background: url('loading.png') no-repeat center center;
-            background-size: cover;
+            background:black;
             display:flex;
             align-items:center;
             justify-content:center;
@@ -19,10 +18,30 @@
         #startBtn{
             padding:15px 30px;
             font-size:20px;
-            border:none;
-            background:black;
-            color:white;
-            border-radius:10px;
+        }
+
+        #healthBar{
+            position:absolute;
+            top:20px;
+            left:20px;
+            width:200px;
+            height:20px;
+            background:red;
+        }
+
+        #health{
+            width:100%;
+            height:100%;
+            background:lime;
+        }
+
+        #map{
+            position:absolute;
+            top:20px;
+            right:20px;
+            width:120px;
+            height:120px;
+            background:white;
         }
 
         canvas { display:none; }
@@ -34,11 +53,18 @@
     <button id="startBtn">START GAME</button>
 </div>
 
+<div id="healthBar"><div id="health"></div></div>
+<div id="map"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
 <script>
 const startBtn = document.getElementById("startBtn");
 const loading = document.getElementById("loading");
+const health = document.getElementById("health");
+const map = document.getElementById("map");
+
+let playerHealth = 100;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xa0a0a0);
@@ -53,15 +79,17 @@ const light = new THREE.DirectionalLight(0xffffff, 1);
 light.position.set(10,20,10);
 scene.add(light);
 
-const roadGeo = new THREE.PlaneGeometry(400, 40);
-const roadMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-const road = new THREE.Mesh(roadGeo, roadMat);
+const road = new THREE.Mesh(
+    new THREE.PlaneGeometry(400, 40),
+    new THREE.MeshLambertMaterial({ color: 0x333333 })
+);
 road.rotation.x = -Math.PI/2;
 scene.add(road);
 
-const playerGeo = new THREE.BoxGeometry(2,4,2);
-const playerMat = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
-const player = new THREE.Mesh(playerGeo, playerMat);
+const player = new THREE.Mesh(
+    new THREE.BoxGeometry(2,4,2),
+    new THREE.MeshLambertMaterial({ color: 0x00ff00 })
+);
 player.position.y = 2;
 scene.add(player);
 
@@ -84,6 +112,8 @@ window.addEventListener("touchmove", e => {
 
     touchX = e.touches[0].clientX;
     touchY = e.touches[0].clientY;
+
+    updateMap();
 });
 
 function updateCamera(){
@@ -93,9 +123,20 @@ function updateCamera(){
     camera.lookAt(player.position);
 }
 
+function updateHealth(){
+    playerHealth -= 0.02;
+    if(playerHealth < 0) playerHealth = 100;
+    health.style.width = playerHealth + "%";
+}
+
+function updateMap(){
+    map.innerHTML = "X: " + Math.round(player.position.x) + "<br>Z: " + Math.round(player.position.z);
+}
+
 function animate(){
     requestAnimationFrame(animate);
     updateCamera();
+    updateHealth();
     renderer.render(scene, camera);
 }
 
