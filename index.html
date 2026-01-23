@@ -133,7 +133,13 @@ for(let i=0;i<20;i++){
 for(let i=0;i<20;i++){
  createBuilding(30, -i*25, 20 + Math.random()*30);
 }
-
+// GARDA AI
+const garda = new THREE.Mesh(
+    new THREE.CapsuleGeometry(1,8,16),
+    new THREE.MeshStandardMaterial({color:0x0000ff})
+);
+garda.position.set(0,3,-80);
+scene.add(garda);function animate(){
 // Garda Station
 createBuilding(-35, -120, 40, 0x2244aa);
 
