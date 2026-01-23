@@ -1,1 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dublin Hustle 3D</title>
 
+<style>
+body{margin:0;overflow:hidden;font-family:Arial}
+
+/* Loading screen */
+#loading{
+  position:fixed;
+  width:100%;
+  height:100%;
+  background:black url("loading.png") center/cover no-repeat;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:10;
+}
+
+#startBtn{
+  padding:20px 40px;
+  font-size:22px;
+}
+
+/* Mobile Controls */
+#controls{
+  position:fixed;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%);
+  display:grid;
+  grid-template-columns:70px 70px 70px;
+  gap:10px;
+  z-index:5;
+}
+
+#controls button{
+  height:70px;
+  font-size:26px;
+  opacity:0.8;
+}
+</style>
+</head>
+
+<body>
+
+<div id="loading">
+  <button id="startBtn">START GAME</button>
+</div>
+
+<div id="controls" style="display:none;">
+  <button id="up">▲</button>
+  <button id="left">◀</button>
+  <button id="down">▼</button>
+  <button id="right">▶</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+
+// ===== LOADING =====
+const startBtn = document.getElementById("startBtn");
+const loading = document.getElementById("loading");
+const controls = document.getElementById("controls");
+
+// ===== SCENE SETUP =====
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xa0a0a0);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+renderer.domElement.style.display = "none";
+
+// Ground
+const ground = new THREE.Mesh(
+  new THREE.PlaneGeometry(500,500),
+  new THREE.MeshBasicMaterial({color:0x3b3b3b})
+);
+ground.rotation.x = -Math.PI/2;
+scene.add(ground);
+
+// Player
+const player = new THREE.Mesh(
+  new THREE.BoxGeometry(2,2,2),
+  new THREE.MeshBasicMaterial({color:0x00ff00})
+);
+player.position.y = 1;
+scene.add(player);
+
+// ===== CAMERA FOLLOW =====
+function updateCamera(){
+  camera.position.x = player.position.x;
+  camera.position.z = player.position.z + 20;
+  camera.position.y = player.position.y + 15;
+  camera.lookAt(player.position);
+}
+
+// ===== ADVANCED CONTROLS =====
+const keys = {up:false,down:false,left:false,right:false};
+let moveSpeed = 0.2;
+let turnSpeed = 0.05;
+
+function setupButton(id, key){
+  const btn = document.getElementById(id);
+
+  btn.addEventListener("touchstart", e=>{
+    e.preventDefault();
+    keys[key]=true;
+  });
+  btn.addEventListener("touchend", ()=>keys[key]=false);
+  btn.addEventListener("mousedown", ()=>keys[key]=true);
+  btn.addEventListener("mouseup", ()=>keys[key]=false);
+}
+
+setupButton("up","up");
+setupButton("down","down");
+setupButton("left","left");
+setupButton("right","right");
+
+function updateMovement(){
+  if(keys.left) player.rotation.y += turnSpeed;
+  if(keys.right) player.rotation.y -= turnSpeed;
+
+  const forward = new THREE.Vector3(0,0,-1).applyQuaternion(player.quaternion);
+
+  if(keys.up) player.position.add(forward.clone().multiplyScalar(moveSpeed));
+  if(keys.down) player.position.add(forward.clone().multiplyScalar(-moveSpeed));
+}
+
+// ===== ANIMATE =====
+function animate(){
+  requestAnimationFrame(animate);
+  updateMovement();
+  updateCamera();
+  renderer.render(scene,camera);
+}
+
+// ===== START GAME =====
+startBtn.onclick = ()=>{
+  loading.style.display="none";
+  renderer.domElement.style.display="block";
+  controls.style.display="grid";
+  animate();
+};
+
+</script>
+</body>
+</html>
