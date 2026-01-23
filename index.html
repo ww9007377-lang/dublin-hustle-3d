@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Dublin Hustle 3D</title>
+<style>
+body{margin:0;overflow:hidden;font-family:Arial;background:black}
+
+#startScreen{
+position:absolute;width:100%;height:100%;
+display:flex;align-items:center;justify-content:center;
+background:url('loading.png') center/cover no-repeat;
+}
+
+#startBtn{
+padding:20px 40px;
+font-size:22px;
+}
+
+#controls{
+position:absolute;
+bottom:30px;
+left:50%;
+transform:translateX(-50%);
+display:grid;
+grid-template-columns:70px 70px 70px;
+grid-gap:10px;
+z-index:10;
+}
+
+#controls button{
+height:70px;
+font-size:26px;
+opacity:0.8;
+}
+
+canvas{display:none}
+</style>
+</head>
+<body>
+
+<div id="startScreen">
+<button id="startBtn">START GAME</button>
+</div>
+
+<div id="controls">
+<button id="up">⬆️</button>
+<button id="left">⬅️</button>
+<button id="down">⬇️</button>
+<button id="right">➡️</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+
+<script>
+const startBtn=document.getElementById("startBtn");
+const startScreen=document.getElementById("startScreen");
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0xa0a0a0);
+
+const camera=new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
+const renderer=new THREE.WebGLRenderer();
+renderer.setSize(window.innerWidth,window.innerHeight);
+document.body.appendChild(renderer.domElement);
+renderer.domElement.style.display="none";
+
+const light=new THREE.DirectionalLight(0xffffff,1);
+light.position.set(10,20,10);
+scene.add(light);
+
+const road=new THREE.Mesh(
+new THREE.PlaneGeometry(600,60),
+new THREE.MeshLambertMaterial({color:0x333333})
+);
+road.rotation.x=-Math.PI/2;
+scene.add(road);
+
+const player=new THREE.Mesh(
+new THREE.BoxGeometry(2,4,2),
+new THREE.MeshLambertMaterial({color:0x00ff00})
+);
+player.position.y=2;
+scene.add(player);
+
+const car=new THREE.Mesh(
+new THREE.BoxGeometry(6,2,3),
+new THREE.MeshLambertMaterial({color:0xff0000})
+);
+car.position.set(15,1,0);
+scene.add(car);
+
+let inCar=false;
+
+// Enter car when close
+window.addEventListener("touchstart",()=>{
+if(player.position.distanceTo(car.position)<6){
+inCar=true;
+}
+});
+
+let move={up:false,down:false,left:false,right:false};
+
+function bind(btn,dir){
+document.getElementById(btn).ontouchstart=()=>move[dir]=true;
+document.getElementById(btn).ontouchend=()=>move[dir]=false;
+}
+
+bind("up","up");
+bind("down","down");
+bind("left","left");
+bind("right","right");
+
+function control(){
+let speed=inCar?0.4:0.2;
+
+if(move.up) player.position.z-=speed;
+if(move.down) player.position.z+=speed;
+if(move.left) player.position.x-=speed;
+if(move.right) player.position.x+=speed;
+
+if(inCar){
+car.position.copy(player.position);
+}
+}
+
+function updateCamera(){
+camera.position.set(player.position.x, player.position.y+15, player.position.z+25);
+camera.lookAt(player.position);
+}
+
+function animate(){
+requestAnimationFrame(animate);
+control();
+updateCamera();
+renderer.render(scene,camera);
+}
+
+startBtn.onclick=()=>{
+startScreen.style.display="none";
+renderer.domElement.style.display="block";
+animate();
+};
+</script>
+
+</body>
+</html>
